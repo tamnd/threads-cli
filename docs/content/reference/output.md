@@ -4,10 +4,9 @@ description: "The output contract every command shares: formats, fields, and tem
 weight: 30
 ---
 
-Every list command in the fleet renders through one formatter, so the same flags
-work everywhere. Wire your commands through it as you add them, and this page
-describes what users get. Pick a format with `-o`, or let th choose:
-a table when writing to a terminal, JSONL when piped.
+Every command renders through one formatter, so the same flags work everywhere.
+Pick a format with `-o`, or let `th` choose: a table when writing to a terminal,
+JSONL when piped.
 
 ## Formats
 

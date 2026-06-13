@@ -7,16 +7,21 @@ heroPrimaryURL: "/getting-started/quick-start/"
 heroPrimaryText: "Get started"
 ---
 
-A command line for Threads.
+`th` turns threads.com into clean, scriptable, structured data. It resolves a
+profile to a rich record, streams its posts and replies, pulls a single post's
+whole thread, and searches, all from one pure-Go binary with no login and no
+browser.
 
 ```bash
-th --help            # the command tree
-th version           # build info
+th profile zuck                  # a profile's full record
+th profile zuck --posts -n 20    # its twenty most recent posts
+th post <url> --replies          # a post and its reply thread
 ```
 
-This site is a starting point. As you add commands, document each one under
-[guides](/guides/) and keep the [CLI reference](/reference/cli/) in step with
-the real flag set.
+`th` reads anonymously, as a web crawler: it asks Threads for the same
+server-rendered pages a search engine gets and parses what comes back. Private
+content stays private, and `th` is explicit about the wall rather than silently
+returning nothing.
 
 ## Where to go next
 
