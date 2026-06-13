@@ -4,16 +4,24 @@ description: "The handful of things that trip people up, and how to fix each one
 weight: 40
 ---
 
-Most of these come down to network reality or how threads serves its data,
-not a bug. Fill this page out with the site-specific cases as you find them.
+Most of these come down to network reality or how Threads serves its data, not a
+bug.
 
 ## Requests start failing or returning 429
 
-threads rate-limits like any public site. th already paces
-requests and retries the transient failures, but a hard limit still means
-backing off. Raise the delay between requests with `--rate` (for example
-`--rate 1s`), lower any concurrency you have set, and retry later. A burst of
-429 or 5xx responses is the site asking you to slow down, not a defect.
+Threads rate-limits like any public site. `th` already paces requests and
+retries the transient failures, but a hard limit still means backing off. Raise
+the delay between requests with `--delay` (for example `--delay 3s`) and retry
+later. A burst of 429 or 5xx responses is the site asking you to slow down, not
+a defect; `th` exits `5` so a script can tell.
+
+## Search returns nothing, or exits 3
+
+The logged-out search and deep-pagination paths ride on persisted GraphQL query
+ids that Threads rotates every few weeks. When the current id no longer answers
+anonymously, `th` exits `3` with a clear note rather than guessing. The
+server-rendered surface (`profile`, `post`, `replies`, `feed`) does not depend
+on those ids and keeps working.
 
 ## Nothing is found for something you expected
 

@@ -10,7 +10,7 @@ LDFLAGS := -s -w \
 	-X github.com/tamnd/threads-cli/cli.Commit=$(COMMIT) \
 	-X github.com/tamnd/threads-cli/cli.Date=$(DATE)
 
-.PHONY: build install test vet fmt clean run
+.PHONY: build install test vet fmt clean run smoke
 
 build:
 	@mkdir -p $(dir $(BINARY))
@@ -30,6 +30,9 @@ fmt:
 
 clean:
 	rm -rf bin dist
+
+smoke: build
+	TH=./$(BINARY) ./scripts/smoke.sh
 
 run: build
 	./$(BINARY) $(ARGS)
