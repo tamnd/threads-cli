@@ -3,12 +3,14 @@ package main
 
 import (
 	"context"
+	"errors"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/charmbracelet/fang"
 	"github.com/tamnd/threads-cli/cli"
+	"github.com/tamnd/threads-cli/threads"
 )
 
 func main() {
@@ -17,11 +19,15 @@ func main() {
 
 	root := cli.Root()
 	// fang gives styled help, errors, and shell completion for free; the command
-	// tree and its exit-code mapping stay in the cli package.
+	// tree lives in the cli package, and a library CodeError maps to its exit code.
 	if err := fang.Execute(ctx, root,
 		fang.WithVersion(cli.Version),
 		fang.WithNotifySignal(os.Interrupt, syscall.SIGTERM),
 	); err != nil {
+		var ce *threads.CodeError
+		if errors.As(err, &ce) {
+			os.Exit(ce.Code)
+		}
 		os.Exit(1)
 	}
 }
