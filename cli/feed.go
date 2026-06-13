@@ -8,7 +8,7 @@ func newFeedCmd(a *App) *cobra.Command {
 	return &cobra.Command{
 		Use:   "feed <@handle|id|url>",
 		Short: "Walk a profile's most-recent posts (alias for profile --posts)",
-		Args:  cobra.ExactArgs(1),
+		Args:  exactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			defer func() { _ = a.Out.Flush() }()
 			ctx := cmd.Context()

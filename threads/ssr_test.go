@@ -43,6 +43,20 @@ func TestParseProfileSSR(t *testing.T) {
 	}
 }
 
+// The logged-out wall Threads serves for a handle with no public profile: og
+// tags with the site's generic description, and no embedded user object. It must
+// parse to no profile, not to a record carrying the boilerplate as a bio.
+const wallHTML = `<html><head>
+<meta property="og:title" content="Threads">
+<meta property="og:description" content="Join Threads to share ideas, ask questions, post random thoughts, find your people and more.">
+</head><body></body></html>`
+
+func TestParseProfileSSRWallIsNotFound(t *testing.T) {
+	if p := parseProfileSSR(wallHTML, "nobody_zzqq99"); p != nil {
+		t.Errorf("walled page must parse to nil, got %+v", p)
+	}
+}
+
 func TestParsePostsSSRReplyDetection(t *testing.T) {
 	posts := parsePostsSSR(fixtureHTML)
 	if len(posts) != 2 {

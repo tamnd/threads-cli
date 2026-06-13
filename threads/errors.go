@@ -46,6 +46,12 @@ func Code(err error) int {
 	return ExitGeneric
 }
 
+// Usagef builds a usage CodeError (exit 2) for command-line misuse such as a
+// wrong argument count or an unknown flag.
+func Usagef(format string, args ...any) *CodeError {
+	return codeErr(ExitUsage, format, args...)
+}
+
 func errLoginWall() *CodeError {
 	return codeErr(ExitLoginWall, "login wall: Threads does not expose this content to anonymous crawlers; set --token or --session for your own account")
 }
