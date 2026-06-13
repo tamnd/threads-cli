@@ -86,7 +86,12 @@ func parseProfileSSR(html, handle string) *Profile {
 			break
 		}
 	}
-	if p.Username == "" {
+	// A real crawler-rendered profile always embeds the user object, the only
+	// place the numeric id appears. Without it the page is the logged-out wall
+	// Threads serves for a handle that does not resolve to a public profile, so
+	// its og:description is the site's generic text, not a bio. Treat that as no
+	// profile rather than returning the wall's boilerplate as data.
+	if p.Username == "" || p.ID == "" {
 		return nil
 	}
 	return p

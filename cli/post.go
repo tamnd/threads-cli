@@ -15,7 +15,7 @@ func newPostCmd(a *App) *cobra.Command {
 The first parsed post is the subject; the rest of the page is its top replies.
 With --replies, stream those replies (extended by the logged-out post-page
 GraphQL query). With --raw, print the upstream HTML untouched.`,
-		Args: cobra.ExactArgs(1),
+		Args: exactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			defer func() { _ = a.Out.Flush() }()
 			ctx := cmd.Context()
@@ -60,7 +60,7 @@ func newRepliesCmd(a *App) *cobra.Command {
 	return &cobra.Command{
 		Use:   "replies <url|shortcode|id>",
 		Short: "Stream replies to a post as their own records",
-		Args:  cobra.ExactArgs(1),
+		Args:  exactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			defer func() { _ = a.Out.Flush() }()
 			ctx := cmd.Context()

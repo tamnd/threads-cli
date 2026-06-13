@@ -13,7 +13,7 @@ func newIDCmd(a *App) *cobra.Command {
 
 Accepts a handle (@name or bare), a numeric pk, a shortcode, or a post URL, and
 reports the kind, the resolved handle/shortcode/pk, and the canonical URL.`,
-		Args: cobra.ExactArgs(1),
+		Args: exactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			defer func() { _ = a.Out.Flush() }()
 			for _, in := range readArgsOrStdin(args) {

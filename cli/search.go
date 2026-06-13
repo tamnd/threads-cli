@@ -15,7 +15,7 @@ func newSearchCmd(a *App) *cobra.Command {
 
 This path depends on a rotating doc_id. When the current doc_id does not expose
 search to anonymous callers, the stream ends honestly after what it found.`,
-		Args: cobra.MinimumNArgs(1),
+		Args: minArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			defer func() { _ = a.Out.Flush() }()
 			ctx := cmd.Context()

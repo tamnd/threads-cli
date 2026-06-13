@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/charmbracelet/fang"
@@ -27,6 +28,13 @@ func main() {
 		var ce *threads.CodeError
 		if errors.As(err, &ce) {
 			os.Exit(ce.Code)
+		}
+		// Cobra reports an unknown command or flag as a plain error; map those to
+		// the usage exit code so misuse is always 2, never the generic 1.
+		if msg := err.Error(); strings.HasPrefix(msg, "unknown command") ||
+			strings.HasPrefix(msg, "unknown flag") ||
+			strings.HasPrefix(msg, "unknown shorthand flag") {
+			os.Exit(threads.ExitUsage)
 		}
 		os.Exit(1)
 	}

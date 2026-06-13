@@ -14,7 +14,7 @@ func newProfileCmd(a *App) *cobra.Command {
 With --posts, walk the profile's recent posts (the server-rendered window, then
 the logged-out GraphQL query while it is current). With --replies, walk the
 profile's replies feed instead.`,
-		Args: cobra.ExactArgs(1),
+		Args: exactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			defer func() { _ = a.Out.Flush() }()
 			ctx := cmd.Context()

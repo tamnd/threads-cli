@@ -31,23 +31,35 @@ th <command> -o raw     # the underlying bytes, unformatted
 
 ## Narrowing columns
 
-Keep only the fields you want:
+Keep only the fields you want, in the order you list them:
 
 ```bash
-th <command> --fields id,title,url
+th profile zuck --posts --fields permalink,likes,replies
 ```
+
+A field name resolves the same three ways a template does (see below): the short
+column alias (`likes`), the JSON key (`like_count`), or the Go struct field name
+(`LikeCount`). That also lets you pull a field that has no column alias, such as
+`user_id` or `quote_count`.
 
 `--no-header` drops the header row in `table` and `csv` output, which helps when
 a downstream tool expects bare rows.
 
 ## Templating rows
 
-For full control over each line, apply a Go text/template. Fields are the JSON
-keys, capitalised:
+For full control over each line, apply a Go text/template. You can name a field
+three ways, whichever you find easier to remember:
+
+- the Go struct field name, like `{{.LikeCount}}`
+- the JSON key, like `{{.like_count}}`
+- the short column alias from `--fields` and the table header, like `{{.likes}}`
 
 ```bash
-th <command> --template '{{.URL}} {{.Title}}'
+th profile zuck --posts --template '{{.permalink}} {{.likes}}'
 ```
+
+JSON keys keep their native types, so a numeric field still compares as a number
+(use a float literal, as in `{{if gt .like_count 100.0}}...{{end}}`).
 
 ## Why auto-detection helps
 

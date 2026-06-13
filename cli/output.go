@@ -5,7 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"maps"
+	"math"
 	"os"
+	"reflect"
+	"strconv"
 	"strings"
 	"text/tabwriter"
 	"text/template"
@@ -97,7 +101,7 @@ func (o *Output) Emit(r Row) error {
 		return o.emitField(r, "url")
 	case FormatRaw:
 		if o.template != nil {
-			return o.template.Execute(o.w, r.Value)
+			return o.template.Execute(o.w, templateData(r))
 		}
 		return o.emitField(r, "")
 	default:
@@ -113,15 +117,49 @@ func (o *Output) project(r Row) (cols, vals []string) {
 	for i, c := range r.Cols {
 		idx[c] = i
 	}
+	// A requested field resolves first against the column aliases, then against
+	// the JSON keys and Go struct field names, so --fields and --template share
+	// one vocabulary and can also reach fields that have no column alias (such as
+	// user_id or quote_count).
+	var data map[string]any
 	for _, f := range o.fields {
 		cols = append(cols, f)
 		if i, ok := idx[f]; ok && i < len(r.Vals) {
 			vals = append(vals, r.Vals[i])
-		} else {
-			vals = append(vals, "")
+			continue
 		}
+		if data == nil {
+			if m, ok := templateData(r).(map[string]any); ok {
+				data = m
+			} else {
+				data = map[string]any{}
+			}
+		}
+		vals = append(vals, cell(data[f]))
 	}
 	return cols, vals
+}
+
+// cell renders a value pulled from the merged field map as a flat string, with
+// whole-number floats (the shape JSON gives every number) printed without a
+// trailing ".0".
+func cell(v any) string {
+	switch x := v.(type) {
+	case nil:
+		return ""
+	case string:
+		return x
+	case bool:
+		return strconv.FormatBool(x)
+	case float64:
+		if x == math.Trunc(x) {
+			return strconv.FormatInt(int64(x), 10)
+		}
+		return strconv.FormatFloat(x, 'g', -1, 64)
+	default:
+		b, _ := json.Marshal(x)
+		return string(b)
+	}
 }
 
 func (o *Output) emitTable(cols, vals []string) error {
@@ -246,6 +284,50 @@ func (o *Output) Flush() error {
 func (o *Output) Raw(b []byte) error {
 	_, err := o.w.Write(b)
 	return err
+}
+
+// templateData builds the value a --template executes against. It merges three
+// naming vocabularies so a template can reach a field by whichever name the user
+// reaches for: the Go struct field names (e.g. {{.LikeCount}}), the JSON keys
+// (e.g. {{.like_count}}), and the friendly column aliases shown by --fields and
+// the table header (e.g. {{.likes}}). JSON keys keep their native types so
+// template arithmetic on numbers still works.
+func templateData(r Row) any {
+	m := map[string]any{}
+
+	// Go struct field names, via reflection over the original value.
+	rv := reflect.ValueOf(r.Value)
+	for rv.Kind() == reflect.Pointer && !rv.IsNil() {
+		rv = rv.Elem()
+	}
+	if rv.Kind() == reflect.Struct {
+		rt := rv.Type()
+		for i := 0; i < rt.NumField(); i++ {
+			if f := rt.Field(i); f.IsExported() {
+				m[f.Name] = rv.Field(i).Interface()
+			}
+		}
+	}
+
+	// JSON keys (id, like_count, permalink, ...), with native types preserved.
+	if b, err := json.Marshal(r.Value); err == nil {
+		var jm map[string]any
+		if json.Unmarshal(b, &jm) == nil {
+			maps.Copy(m, jm)
+		}
+	}
+
+	// Friendly column aliases (likes, replies, media, ...) as rendered strings.
+	for i, c := range r.Cols {
+		if i < len(r.Vals) {
+			m[c] = r.Vals[i]
+		}
+	}
+
+	if len(m) == 0 {
+		return r.Value
+	}
+	return m
 }
 
 func splitComma(s string) []string {

@@ -155,11 +155,13 @@ th profile zuck --posts -o yaml    # YAML documents
 th profile zuck --posts -o url     # just the permalink
 ```
 
-Narrow the columns with `--fields`, or template each row:
+Narrow the columns with `--fields`, or template each row. Both name a field by
+its column alias (`likes`), its JSON key (`like_count`), or its Go field name
+(`LikeCount`), so you can use whichever you remember:
 
 ```sh
-th profile zuck --posts --fields permalink,like_count,reply_count
-th profile zuck --posts --template '{{.Permalink}} {{.LikeCount}}'
+th profile zuck --posts --fields permalink,likes,replies
+th profile zuck --posts --template '{{.permalink}} {{.likes}}'
 ```
 
 `--raw` (on `post`) prints the upstream HTML untouched, for when you want to

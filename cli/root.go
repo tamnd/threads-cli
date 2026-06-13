@@ -76,6 +76,10 @@ Quick start:
 			return app.init(g)
 		},
 	}
+	// Map a bad flag to the usage exit code, the same as a bad argument count.
+	root.SetFlagErrorFunc(func(_ *cobra.Command, err error) error {
+		return threads.Usagef("%s", err)
+	})
 
 	pf := root.PersistentFlags()
 	pf.StringVarP(&g.output, "output", "o", "auto", "table|json|jsonl|csv|tsv|yaml|url|raw")
@@ -153,6 +157,27 @@ func (a *App) progress(format string, args ...any) {
 		return
 	}
 	_, _ = fmt.Fprintf(os.Stderr, "[th] "+format+"\n", args...)
+}
+
+// exactArgs is cobra.ExactArgs with the usage exit code, so a wrong argument
+// count exits 2 like every other command-line misuse.
+func exactArgs(n int) cobra.PositionalArgs {
+	return func(cmd *cobra.Command, args []string) error {
+		if len(args) != n {
+			return threads.Usagef("%q needs exactly %d argument(s), got %d", cmd.CommandPath(), n, len(args))
+		}
+		return nil
+	}
+}
+
+// minArgs is cobra.MinimumNArgs with the usage exit code.
+func minArgs(n int) cobra.PositionalArgs {
+	return func(cmd *cobra.Command, args []string) error {
+		if len(args) < n {
+			return threads.Usagef("%q needs at least %d argument(s), got %d", cmd.CommandPath(), n, len(args))
+		}
+		return nil
+	}
 }
 
 // readArgsOrStdin returns args, or lines from stdin when the single arg is "-".

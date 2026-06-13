@@ -20,7 +20,7 @@ func newDBBuildCmd(a *App) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "build <@handle|id|url>",
 		Short: "Crawl a profile's posts into a SQLite table",
-		Args:  cobra.ExactArgs(1),
+		Args:  exactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			store, err := threads.OpenStore(dbPath)
@@ -58,7 +58,7 @@ func newDBQueryCmd(a *App) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "query <sql>",
 		Short: "Run SQL against the local dataset",
-		Args:  cobra.ExactArgs(1),
+		Args:  exactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			defer func() { _ = a.Out.Flush() }()
 			store, err := threads.OpenStore(dbPath)
